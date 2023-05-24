@@ -2,9 +2,16 @@ import xlrd
 import xlwt
 from xlutils.copy import copy
 
-
-""" 设计一个函数，将结果保存在excel表中，excel的名字需要自己能够命名 """
 def create_excel_xsl(path, sheet_name, value):
+    """
+    根据value值创建一个excel表格和sheet
+    :param path: 表格路径
+    :param sheet_name: sheet名称
+    :param value: 表头，表头规范如下
+    :return: None
+
+    value = [["feature1", "feature2", "feature3"....]]
+    """
     index = len(value)
     try:
         with xlrd.open_workbook(path) as workbook:
@@ -30,8 +37,16 @@ def create_excel_xsl(path, sheet_name, value):
         print("xls格式表格创建成功")
 
 
-""" 向excel表中写入数据"""
 def write_excel_xls_append(path, sheet_name, value):
+    """
+    将value值写入到指定的excel表格中
+    :param path: 表格路径
+    :param sheet_name: sheet名称
+    :param value: 新增一列，形式如下
+    :return: None
+
+    value = [["feature1", "feature2", "feature3"....]]
+    """
     index = len(value)
     workbook = xlrd.open_workbook(path)
     worksheet = workbook.sheet_by_name(sheet_name)
@@ -52,6 +67,12 @@ def write_excel_xls_append(path, sheet_name, value):
 
 
 def sheet_exists(path, sheet_name):
+    """
+    判断excel表格的sheet表格是否存在
+    :param path: 表格路径
+    :param sheet_name: sheet名称
+    :return: Ture or False 是否存在
+    """
     try:
         workbook = xlrd.open_workbook(path)
         worksheet = workbook.sheet_by_name(sheet_name)
@@ -60,8 +81,14 @@ def sheet_exists(path, sheet_name):
     except Exception:
         return False
 
-""" 读取excel表格中的数据 """
+
 def read_excel_xls(path, sheet_name):
+    """
+    展示excel表格中的数据
+    :param path: 表格路径
+    :param sheet_name: sheet名称
+    :return:
+    """
     workbook = xlrd.open_workbook(path)  # 打开工作簿
     worksheet = workbook.sheet_by_name(sheet_name)  # 获取工作簿中的所有表格
     for i in range(0, worksheet.nrows):
@@ -70,8 +97,14 @@ def read_excel_xls(path, sheet_name):
         print()
 
 
-""" 读取指定列中的数据 param:col_name """
 def get_excel_data(path, sheet_name, col_name):
+    """
+    读取excel表格中指定列的数据
+    :param path: 表格路径
+    :param sheet_name: sheet名称
+    :param col_name: sheet中的列名，级某属性名称
+    :return: 相应的数据list
+    """
     workbook = xlrd.open_workbook(path)  # 打开工作簿
     worksheet = workbook.sheet_by_name(sheet_name)  # 获取工作簿中的所有表格
 
@@ -83,9 +116,6 @@ def get_excel_data(path, sheet_name, col_name):
         print("no matched col name")
         return None
 
-    """
-        开始取相应列的数据
-    """
     data = []
     for i in range(1, worksheet.nrows):
         for j in range(0, worksheet.ncols):
