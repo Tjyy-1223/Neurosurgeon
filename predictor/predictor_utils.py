@@ -3,13 +3,16 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.linear_model import LinearRegression
 import numpy as np
 from sklearn import metrics
+from collections.abc import Iterable
 import joblib
 
 from models.MobileNet import ConvNormActivation,InvertedResidual
 
 
 """
-    主要为构建预测模型 prediction models需要用到的函数以及评估模型准确度函数
+    1. 主要为构建预测模型 prediction models需要用到的函数
+    2. 评估模型准确度用到的函数
+    3. 用于预测不同DNN层的kernel_predictor功能函数
 """
 
 
@@ -128,4 +131,8 @@ def judge_block(layer):
     """
     if isinstance(layer,ConvNormActivation) or isinstance(layer,InvertedResidual):
         return True
+    if isinstance(layer,Iterable):
+        return True
     return False
+
+

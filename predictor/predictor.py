@@ -21,15 +21,16 @@ def init_predictor_dict(my_dict):
     predictor_dict = my_dict
 
 
-def kernel_predictor(kernel_kind, edge_device=True,ns=False):
+def kernel_predictor(kernel_kind, edge_device=True):
     """
+    根据传入的kernel_kind对DNN层的推理时延进行预测
     input : [['HW','kernel','stride','Cin','Cout','FLOPs']]
     output : ['latency']
     :param kernel_kind : 0 - conv2d , 1 - dw_conv2d , 2 - linear, 3 - maxPool2d , 4 - avgPool2d, 5 - BatchNorm
     :param edge_device :True - edge , False - cloud
-    :param ns :neuron surgeon using linear regression
     :return: conv2d predictors
     """
+    de
     if edge_device:
         edge_or_cloud = 0
     else:
@@ -39,8 +40,6 @@ def kernel_predictor(kernel_kind, edge_device=True,ns=False):
     kernel_name_list = ["conv2d", "dw conv2d", "linear", "maxPool2d", "avgPool2d", "BatchNorm"]
     kernel_path_list = ["../latency_predictor/predictors/config/edge/",
                         "../latency_predictor/predictors/config/cloud/"]
-
-    mid_str = "lr" if ns else "rf"
     preditor_name_list = ["_conv2d.pkl", "_dw_conv2d.pkl", "_fc.pkl",
                           "_maxpool2d.pkl", "_avgpool2d.pkl", "_batchNorm.pkl"]
 
@@ -215,28 +214,6 @@ def predict_kernel_latency(input_features,layer,edge_device=True,ns=False):
         return get_batchNorm_lat(input_features,layer,edge_device,ns=ns)
     elif isinstance(layer,nn.Flatten) or isinstance(layer,nn.ReLU) or isinstance(layer,nn.Dropout) or isinstance(layer,nn.ReLU6):
         return 0
-
-
-def judge_block(layer):
-    """
-    判断 layer 是否为一个自定义block类型
-    例如 MobileNet、ResNet、googleNet中的block
-    """
-    if isinstance(layer,MobileNet.ConvNormActivation) or isinstance(layer,MobileNet.InvertedResidual):
-        return True
-    if isinstance(layer,MobileNet2.ConvNormActivation) or isinstance(layer,MobileNet2.InvertedResidual):
-        return True
-    if isinstance(layer, ResNet.BasicBlock) or isinstance(layer, ResNet2.BasicBlock):
-        return True
-    if isinstance(layer,GoogLeNet.BasicConv2d) or isinstance(layer,GoogLeNet.Inception):
-        return True
-    if isinstance(layer,GoogLeNet2.BasicConv2d) or isinstance(layer,GoogLeNet2.Inception):
-        return True
-    if isinstance(layer,Inceptionv2.BasicConv2d) or isinstance(layer,Inceptionv2.Inception):
-        return True
-    if isinstance(layer,Iterable):
-        return True
-    return False
 
 
 def predict_layer_latency(conv_block,x,edge_device,show=False,compare=False,ns=False):
