@@ -3,14 +3,14 @@ import torch.nn as nn
 from collections import abc
 
 class AlexNet(nn.Module):
-    def __init__(self, input_layer=3, num_classes: int = 1000) -> None:
+    def __init__(self, input_channels=3, num_classes: int = 1000) -> None:
         """
-        input_layer: 输入图像的通道数，默认通道数为3
+        input_channels: 输入图像的通道数，默认通道数为3
         num_classes: AlexNet的输出维度，默认为1000
         """
         super(AlexNet, self).__init__()
         self.layers = nn.Sequential(
-            nn.Conv2d(input_layer,64,kernel_size=(11,11),stride=(4,4),padding=1),
+            nn.Conv2d(input_channels,64,kernel_size=(11,11),stride=(4,4),padding=1),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2),
             nn.Conv2d(64, 192, kernel_size=(5, 5), padding=2),

@@ -4,14 +4,14 @@ from collections import abc
 
 
 class LeNet(nn.Module):
-    def __init__(self,input_layer=3,num_classes: int = 1000) -> None:
+    def __init__(self,input_channels=3,num_classes: int = 1000) -> None:
         """
-            input_layer: 输入图像的通道数，默认通道数为3
+            input_channels: 输入图像的通道数，默认通道数为3
             num_classes: LeNet的输出维度，默认为1000
         """
         super(LeNet, self).__init__()
         self.features = nn.Sequential(
-            nn.Conv2d(input_layer, 6, kernel_size=(5,5), padding=2),
+            nn.Conv2d(input_channels, 6, kernel_size=(5,5), padding=2),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Conv2d(6, 16, kernel_size=(5,5)),

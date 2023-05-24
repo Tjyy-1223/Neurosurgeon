@@ -7,7 +7,6 @@ from collections import abc
 class VGG(nn.Module):
     def __init__(self,feature,num_classes:int = 1000,init_weights:bool = True) -> None:
         """
-            input_layer: 输入图像的通道数，默认通道数为3
             num_classes: VGG-16的输出维度，默认为1000
         """
         super(VGG, self).__init__()
@@ -90,14 +89,14 @@ class SentenceIterator(abc.Iterator):
         return layer
 
 
-def make_layers(cfg, batch_norm: bool = False) -> nn.Sequential:
+def make_layers(cfg,input_channels: int = 3,batch_norm: bool = False) -> nn.Sequential:
     """
         vgg-model's features based on cfg
         cfg - 代表各层参数配置
         batch_norm - 代表是否需要BatchNorm层
     """
     layers = []
-    in_channels = 3
+    in_channels = input_channels
 
     for v in cfg:
         if v == 'M':
@@ -131,15 +130,15 @@ cfg = [
     [64,2],'M',[128,2],'M',[256,3],'M',[512,3],'M',[512,3],'M'  # vgg 16
 ]
 
-def _vgg(cfg:List[Union[List,int]], batch_norm: bool, pretrained: bool, **kwargs: Any) -> VGG:
+def _vgg(cfg:List[Union[List,int]],input_channels: int,batch_norm: bool, pretrained: bool, **kwargs: Any) -> VGG:
     if pretrained:
         kwargs['init_weights'] = False
-    model = VGG(make_layers(cfg, batch_norm=batch_norm), **kwargs)
+    model = VGG(make_layers(cfg,input_channels=input_channels, batch_norm=batch_norm), **kwargs)
     return model
 
-def vgg16(pretrained: bool = False, **kwargs: Any) -> VGG:
-    return _vgg(cfg, batch_norm=False, pretrained=pretrained, **kwargs)
+def vgg16(input_channels: int,pretrained: bool = False, **kwargs: Any) -> VGG:
+    return _vgg(cfg,input_channels=input_channels,batch_norm=False, pretrained=pretrained, **kwargs)
 
 
-def vgg16_bn(pretrained: bool = False, **kwargs: Any) -> VGG:
-    return _vgg(cfg, batch_norm=True, pretrained=pretrained, **kwargs)
+def vgg16_bn(input_channels: int,pretrained: bool = False, **kwargs: Any) -> VGG:
+    return _vgg(cfg,input_channels=input_channels,batch_norm=True, pretrained=pretrained, **kwargs)
