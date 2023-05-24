@@ -1,22 +1,15 @@
 import torch
 import torch.nn as nn
-from typing import Union,List,Dict,Any,cast
+from typing import Union,List,Any,cast
 from collections import abc
-import time
-from torchvision import models
-
-""" vgg-model's features based on cfg - dict(str,list) """
-""" vgg-16 各层的配置 M代表添加MaxPool2d层 数字代表下一层的channel参数"""
-cfg = [
-    [64,2],'M',[128,2],'M',[256,3],'M',[512,3],'M',[512,3],'M'  # vgg 16
-    # [64,2],'M',[128,2],'M',[256,2],'M',[512,2],'M',[512,2],'M'  # vgg 13
-    # [64,1],'M',[128,1],'M',[256,2],'M',[512,2],'M',[512,2],'M'    # vgg 11
-]
 
 
-""" VGG model """
 class VGG(nn.Module):
-    def __init__(self,feature:nn.Module,num_classes:int = 1000,init_weights:bool = True) -> None:
+    def __init__(self,feature,num_classes:int = 1000,init_weights:bool = True) -> None:
+        """
+            input_layer: 输入图像的通道数，默认通道数为3
+            num_classes: VGG-16的输出维度，默认为1000
+        """
         super(VGG, self).__init__()
         self.features = feature
         self.classifier = nn.Sequential(
@@ -41,6 +34,7 @@ class VGG(nn.Module):
         return x
 
     def __iter__(self):
+        """ 用于遍历VGG-16模型的每一层 """
         return SentenceIterator(self.features,self.classifier)
 
     def __len__(self):
@@ -70,8 +64,13 @@ class VGG(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
 
-""" for model's iter """
+
 class SentenceIterator(abc.Iterator):
+    """
+        VGG-16迭代器
+        下面是 VGG-16 网络的迭代参数调整
+        将下面的设置传入到 VGG-16 的 __iter__ 中可以完成对于 VGG-16 网络的层级遍历
+    """
     def __init__(self,features,classifier):
         self.features = features
         self.classifier = classifier
@@ -90,12 +89,13 @@ class SentenceIterator(abc.Iterator):
             self._index += 1
         return layer
 
-""" 
-    vgg-model's features based on cfg 
-    cfg - 代表各层参数配置
-    batch_norm - 代表是否需要BatchNorm层
-"""
+
 def make_layers(cfg, batch_norm: bool = False) -> nn.Sequential:
+    """
+        vgg-model's features based on cfg
+        cfg - 代表各层参数配置
+        batch_norm - 代表是否需要BatchNorm层
+    """
     layers = []
     in_channels = 3
 
@@ -109,7 +109,6 @@ def make_layers(cfg, batch_norm: bool = False) -> nn.Sequential:
 
             config_list = []
             for epoch in range(range_epoch):
-                # 选定正确的conv2d模型
                 if epoch == range_epoch - 1:
                     conv2d = nn.Conv2d(in_channels, out_channels, kernel_size=(3, 3), padding=1)
                     in_channels = out_channels
@@ -126,13 +125,11 @@ def make_layers(cfg, batch_norm: bool = False) -> nn.Sequential:
 
 
 
-# cfgs: Dict[str, List[Union[str, int]]] = {
-#     'A': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
-#     'B': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
-#     'D': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
-#     'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
-# }
-#
+# vgg-model's features based on cfg - dict(str,list)
+# vgg-16 各层的配置 M代表添加MaxPool2d层 数字代表下一层的channel参数
+cfg = [
+    [64,2],'M',[128,2],'M',[256,3],'M',[512,3],'M',[512,3],'M'  # vgg 16
+]
 
 def _vgg(cfg:List[Union[List,int]], batch_norm: bool, pretrained: bool, **kwargs: Any) -> VGG:
     if pretrained:
@@ -141,8 +138,8 @@ def _vgg(cfg:List[Union[List,int]], batch_norm: bool, pretrained: bool, **kwargs
     return model
 
 def vgg16(pretrained: bool = False, **kwargs: Any) -> VGG:
-    return _vgg(cfg, batch_norm=False, pretrained = pretrained, **kwargs)
+    return _vgg(cfg, batch_norm=False, pretrained=pretrained, **kwargs)
 
 
 def vgg16_bn(pretrained: bool = False, **kwargs: Any) -> VGG:
-    return _vgg(cfg, batch_norm=True, pretrained = pretrained, **kwargs)
+    return _vgg(cfg, batch_norm=True, pretrained=pretrained, **kwargs)
