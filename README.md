@@ -11,7 +11,7 @@
 
 2）DNN模型层级特征研究：Layer latency 和 Size of output data。
 
-2）Deployment Phase：在1本地机器运行DNN层得到构建预测模型，提供本地数据集和模型参数。
+2）Deployment Phase：在本地机器运行DNN层得到构建预测模型，提供本地数据集和模型参数。
 
 3）Runtime Phase：实现DNN模型协同推理，具体脚本命令参考下面的描述。
 
