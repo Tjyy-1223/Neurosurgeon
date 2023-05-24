@@ -1,13 +1,13 @@
 import torch
 import torch.nn as nn
 from collections import abc
-import time
 
 class AlexNet(nn.Module):
-    """
-        可循环迭代 AlexNet
-    """
     def __init__(self, input_layer=3, num_classes: int = 1000) -> None:
+        """
+        input_layer: 输入图像的通道数，默认通道数为3
+        num_classes: AlexNet的输出维度，默认为1000
+        """
         super(AlexNet, self).__init__()
         self.layers = nn.Sequential(
             nn.Conv2d(input_layer,64,kernel_size=(11,11),stride=(4,4),padding=1),
@@ -40,6 +40,7 @@ class AlexNet(nn.Module):
         return x
 
     def __iter__(self):
+        """ 用于遍历AlexNet模型的每一层 """
         return SentenceIterator(self.layers)
 
     def __len__(self):
@@ -57,7 +58,7 @@ class AlexNet(nn.Module):
 
 class SentenceIterator(abc.Iterator):
     """
-    修改 AlexNet 使其 iterable:
+    AlexNet迭代器
     下面是 AlexNet 网络的迭代参数调整
     将下面的设置传入到 AlexNet 的 __iter__ 中可以完成对于 AlexNet 网络的层级遍历
     """
