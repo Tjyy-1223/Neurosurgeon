@@ -1,9 +1,9 @@
 # Neurosurgeon
 🥳本项目根据经典论文：Neurosurgeon: Collaborative Intelligence Between the Cloud and Mobile Edge进行实现，为DNN模型选取划分点后分别部署在云端设备和边端设备上进行协同推理(Collabrative Inference)。
 
-论文链接🔗：
+论文链接🔗：[Collaborative Intelligence Between the Cloud and Mobile Edge.pdf](https://github.com/Tjyy-1223/Neurosurgeon/blob/main/paper/Collaborative Intelligence Between the Cloud and Mobile Edge.pdf)
 
-![image-20230524094940267](/Users/tianjiangyu/MyStudy/Neurosurgeon/assets/image-20230524094940267.png)
+![image-20230524094940267.png](https://github.com/Tjyy-1223/Neurosurgeon/blob/main/assets/image-20230524094940267.png?raw=true)
 
 具体工作：
 
@@ -20,9 +20,11 @@
 #### 项目结构
 
 + models：实现四种DNN模型 - LeNet、AlexNet、VggNet-16、MobileNet-v2
-+ 
-
-
++ utils: 
+  + inference_utils: 与DNN模型推理相关的功能函数
+  + excel_utils: 与excel表存储和读取相关的功能函数
++ predictor：
+  + 
 
 
 
