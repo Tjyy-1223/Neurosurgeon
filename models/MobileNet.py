@@ -4,7 +4,7 @@ from torch import Tensor
 from typing import Any, Callable,List, Optional
 from collections import abc
 
-class MobileNetV2(nn.Module):
+class MobileNet(nn.Module):
     def __init__(
             self,
             input_channels: int = 3,
@@ -17,7 +17,7 @@ class MobileNetV2(nn.Module):
             input_channels: 输入图像的通道数，默认通道数为3
             num_classes: MobileNetV2的输出维度，默认为1000
         """
-        super(MobileNetV2, self).__init__()
+        super(MobileNet, self).__init__()
         block = InvertedResidual
         norm_layer = nn.BatchNorm2d
 
@@ -132,11 +132,6 @@ class SentenceIterator(abc.Iterator):
         else:
             self._index += 1
         return layer
-
-
-def mobilenet_v2(**kwargs: Any) -> MobileNetV2:
-    model = MobileNetV2(**kwargs)
-    return model
 
 
 class ConvNormActivation(torch.nn.Sequential):
