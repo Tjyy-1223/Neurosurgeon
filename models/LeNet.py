@@ -4,13 +4,17 @@ from collections import abc
 
 
 class LeNet(nn.Module):
-    def __init__(self,input_layer = 3,num_classes: int = 1000) -> None:
+    def __init__(self,input_layer=3,num_classes: int = 1000) -> None:
+        """
+            input_layer: 输入图像的通道数，默认通道数为3
+            num_classes: LeNet的输出维度，默认为1000
+        """
         super(LeNet, self).__init__()
         self.features = nn.Sequential(
-            nn.Conv2d(input_layer, 6, kernel_size=5, padding=2),
+            nn.Conv2d(input_layer, 6, kernel_size=(5,5), padding=2),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(6, 16, kernel_size=5),
+            nn.Conv2d(6, 16, kernel_size=(5,5)),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
@@ -32,6 +36,7 @@ class LeNet(nn.Module):
         return x
 
     def __iter__(self,):
+        """ 用于遍历LeNet模型的每一层 """
         return SentenceIterator(self.features,self.classifier)
 
     def __len__(self):
@@ -50,12 +55,18 @@ class LeNet(nn.Module):
 
 
 class SentenceIterator(abc.Iterator):
+    """
+    LeNet迭代器
+    下面是 LeNet 网络的迭代参数调整
+    将下面的设置传入到 LeNet 的 __iter__ 中可以完成对于 LeNet 网络的层级遍历
+    """
     def __init__(self,features,classifier):
         self.features = features
         self.classifier = classifier
         self._index = 0
         self.len1 = len(features)
-        self.len2 = len(classifier)
+        # self.len2 = len(classifier)
+
     def __next__(self):
         try:
             if self._index < self.len1:
