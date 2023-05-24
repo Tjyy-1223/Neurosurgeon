@@ -6,6 +6,7 @@ from models.LeNet import LeNet
 from models.AlexNet import AlexNet
 from models.VggNet import vgg16_bn
 from models.MobileNet import MobileNetV2
+from utils.excel_utils import *
 
 
 def get_dnn_model(arg: str):
