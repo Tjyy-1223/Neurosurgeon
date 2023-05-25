@@ -156,7 +156,7 @@ def kernel_predictor_creator(kernel_kind, device, predictor_dict):
 
     # 存放模型参数的位置
     predictor_config_list = ["conv.pkl", "dw_conv.pkl", "linear.pkl","maxpool.pkl", "avgpool.pkl", "batchnorm.pkl"]
-    predictor_config_path = "./config/edge/" if device == "cloud" else "./config/cloud/"
+    predictor_config_path = "./config/edge/" if device == "edge" else "./config/cloud/"
 
     # predictor根据传入的kernel-kind和device查找有没有对应的模型 如果模型已经被加载 则跳过
     # 如果模型没有被加载 但是有模型参数 则加载模型
@@ -356,10 +356,10 @@ def predict_model_latency(x, model,device, predictor_dict):
     :return: latency
     """
     model_lat = 0.0
-    # print(model)
+    print(model)
     if isinstance(model,Iterable):
         for layer in model:
-            layer_lat = predict_model_latency(x, layer ,device, predictor_dict)
+            layer_lat = predict_model_latency(x, layer,device, predictor_dict)
             x = layer(x)
             model_lat += layer_lat
     else:  # not iterable
