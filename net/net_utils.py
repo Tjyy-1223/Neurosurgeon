@@ -172,3 +172,39 @@ def get_data(conn):
 def get_short_data(conn):
     """ 获取短数据"""
     return pickle.loads(conn.recv(1024))
+
+
+def get_speed(network_type,bandwidth):
+    """
+    根据speed_type获取网络带宽
+    :param network_type: 3g lte or wifi
+    :param bandwidth 对应的网络速度 3g单位为Kbps lte和wifi单位为Mbps
+    :return: 带宽速度 单位：Bpms bytes_per_ms 单位毫秒内可以传输的字节数
+    """
+    transfer_from_Mb_to_B = 1000000 / 8
+    transfer_from_Kb_to_B = 1000 / 8
+
+    if network_type == "3g":
+        return bandwidth * transfer_from_Kb_to_B / 1000
+    elif network_type == "lte" or  network_type == "wifi":
+        return bandwidth * transfer_from_Mb_to_B / 1000
+    else:
+        raise RuntimeError(f"目前不支持network type - {network_type}")
+
+
+
+def show_speed(data_size,actual_latency,speed_Bpms):
+    """
+    用于比较：
+    （1）iperf真实带宽 和 预测带宽
+    （2）真实传输时延 和 根据公式计算得出的的预测传输时延
+    :param data_size: 数据大小 - bytes
+    :param actual_latency: 实际传输时延
+    :param speed_Bpms: iperf获取的真实带宽
+    :return: 展示比较 应该是差不多的比较结果
+    """
+    print(f"actual speed : {speed_Bpms:.3f} B/ms")  # iperf获取的带宽
+    print(f"predicted speed : {(data_size/actual_latency):.3f} B/ms")  # 通过数据大小和真实传输时间计算的带宽
+
+    print(f"actual latency for {data_size} bytes : {actual_latency:.3f} ms")  # 实际记录的时延
+    print(f"predicted latency for {data_size} bytes : {(data_size / speed_Bpms):.3f} ms")  # 通过iperf带宽预测的时延
