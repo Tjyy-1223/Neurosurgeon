@@ -1,5 +1,8 @@
 
-
+"""
+FLOPs参数可以帮助更好地调整预测器 - 这里没有用到
+可以进一步用来提升模型预测性能
+"""
 def get_linear_FLOPs(linear_layer):
     """
     计算全连接层 FLOPs参数
