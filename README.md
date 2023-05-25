@@ -23,8 +23,11 @@
 + utils: 
   + inference_utils: 与DNN模型推理相关的功能函数
   + excel_utils: 与excel表存储和读取相关的功能函数
-+ predictor：
-  + 
++ predictor：目前只提供了模型参数 没有提供数据集
+  + data文件夹：已经在本地设备上收集好的DNN层-时延数据集
+  + config文件夹：模型参数存储位置 - 自动生成
+  + predictor_utils: 
++ 
 
 
 
@@ -45,3 +48,5 @@ Neurosurgeon是云边协同推理中的优秀框架，首次实现了将DNN模�
 + 适用于链式拓扑结构
 + 没有考虑DNN块中的划分点
 + 只考虑了静态网络环境下的划分状况
++ （目前项目中）线性回归不太准确 - 如何提升预测器性能是下一步的工作
+
