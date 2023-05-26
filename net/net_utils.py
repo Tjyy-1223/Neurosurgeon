@@ -3,6 +3,7 @@ import time
 import pickle
 import torch
 import platform
+import speedtest as spt
 from utils import inference_utils
 
 
@@ -19,14 +20,14 @@ def start_server(socket_server,device):
 
         # 接收模型类型
         model_type = get_short_data(conn)
-        print(f"f get model type successfully.")
+        print(f"get model type successfully.")
 
         # 读取模型
         model = inference_utils.get_dnn_model(model_type)
 
         # 接收模型分层点
         partition_point = get_short_data(conn)
-        print(f"f get partition point successfully.")
+        print(f"get partition point successfully.")
 
         _,cloud_model = inference_utils.model_partition(model, partition_point)
         cloud_model = cloud_model.to(device)
@@ -34,9 +35,15 @@ def start_server(socket_server,device):
 
         # 接收中间数据并返回传输时延
         edge_output,transfer_latency = get_data(conn)
-        print(f"f get edge_output and transfer latency successfully.")
+
+        # 连续发送两个消息 防止消息粘包
+        conn.recv(40)
+
+        print(f"get edge_output and transfer latency successfully.")
         send_short_data(conn,transfer_latency,"transfer latency")
 
+        # 连续发送两个消息 防止消息粘包
+        conn.recv(40)
 
         inference_utils.warmUp(cloud_model, edge_output, device)
         # 记录云端推理时延
@@ -79,10 +86,15 @@ def start_client(ip,port,input_x,model_type,partition_point,device):
 
     # 发送中间数据
     send_data(conn,edge_output,"edge output")
+
+    # 连续接收两个消息 防止消息粘包
+    conn.sendall("avoid  sticky".encode())
+
     transfer_latency = get_short_data(conn)
-    print(f"{model_type} 传输完成 - {transfer_latency} ms")
+    print(f"{model_type} 传输完成 - {transfer_latency:.3f} ms")
 
-
+    # 连续接收两个消息 防止消息粘包
+    conn.sendall("avoid  sticky".encode())
 
     cloud_latency = get_short_data(conn)
     print(f"{model_type} 在云端设备上推理完成 - {cloud_latency} ms")
@@ -262,20 +274,39 @@ def get_short_data(conn):
     return pickle.loads(conn.recv(1024))
 
 
+def get_bandwidth():
+    """
+    获取当前的网络带宽
+    :return: 网络带宽 MB/s
+    """
+    print("正在获取网络带宽，wait...")
+    spd = spt.Speedtest(secure=True)
+    spd.get_best_server()
+
+    # download = int(spd.download() / 1024 / 1024)
+    upload = int(spd.upload() / 1024 / 1024)
+
+    # print(f'当前下载速度为：{str(download)} MB/s')
+    print(f'当前上传速度为：{str(upload)} MB/s')
+    return upload
+
+
+
+
 def get_speed(network_type,bandwidth):
     """
     根据speed_type获取网络带宽
     :param network_type: 3g lte or wifi
-    :param bandwidth 对应的网络速度 3g单位为Kbps lte和wifi单位为Mbps
+    :param bandwidth 对应的网络速度 3g单位为KB/s lte和wifi单位为MB/s
     :return: 带宽速度 单位：Bpms bytes_per_ms 单位毫秒内可以传输的字节数
     """
-    transfer_from_Mb_to_B = 1000000 / 8
-    transfer_from_Kb_to_B = 1000 / 8
+    transfer_from_MB_to_B = 1024 * 1024
+    transfer_from_KB_to_B = 1024
 
     if network_type == "3g":
-        return bandwidth * transfer_from_Kb_to_B / 1000
+        return bandwidth * transfer_from_KB_to_B / 1000
     elif network_type == "lte" or network_type == "wifi":
-        return bandwidth * transfer_from_Mb_to_B / 1000
+        return bandwidth * transfer_from_MB_to_B / 1000
     else:
         raise RuntimeError(f"目前不支持network type - {network_type}")
 

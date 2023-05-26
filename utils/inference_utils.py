@@ -156,7 +156,7 @@ def warmUp(model,input_data,device):
     """
     epoch = 10
     model = model.to(device)
-    for i in range(3):
+    for i in range(1):
         if device == "cuda":
             warmUpGpu(model, input_data, device, epoch)
         elif device == "cpu":
@@ -183,8 +183,8 @@ def warmUpGpu(model, input_data, device, epoch):
             curr_time = starter.elapsed_time(ender)
             avg_time += curr_time
         avg_time /= epoch
-        print(f"GPU Warm Up : {curr_time:.3f}ms")
-        print("==============================================")
+        # print(f"GPU Warm Up : {curr_time:.3f}ms")
+        # print("==============================================")
 
 
 def warmUpCpu(model, input_data, device, epoch):
@@ -202,8 +202,8 @@ def warmUpCpu(model, input_data, device, epoch):
             curr_time = end - start
             avg_time += curr_time
         avg_time /= epoch
-        print(f"CPU Warm Up : {curr_time * 1000:.3f}ms")
-        print("==============================================")
+        # print(f"CPU Warm Up : {curr_time * 1000:.3f}ms")
+        # print("==============================================")
 
 
 

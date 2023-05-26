@@ -24,7 +24,7 @@ def get_input(HW):
     return torch.rand(size=(1, 3, HW, HW), requires_grad=False)
 
 
-def neuron_surgeon_deployment(model,network_type="wifi",define_speed=56,show=False):
+def neuron_surgeon_deployment(model,network_type,define_speed,show=False):
     """
     为DNN模型选取最优划分点
     :param model: DNN模型
@@ -86,9 +86,8 @@ def neuron_surgeon_deployment(model,network_type="wifi",define_speed=56,show=Fal
 
     # show best partition point
     res_layer = get_layer(model,res_index)
-    if show:
-        print(f"best latency : {res_lat:.2f} ms , best partition point : {res_layer_index + 1} - {res_layer}")
-        print("----------------------------------------------------------------------------------------------------------")
+    print(f"best latency : {res_lat:.2f} ms , best partition point : {res_layer_index + 1} - {res_layer}")
+    print("----------------------------------------------------------------------------------------------------------")
 
     #   return the best partition point
     return res_index
