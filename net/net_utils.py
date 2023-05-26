@@ -3,6 +3,94 @@ import time
 import pickle
 import torch
 import platform
+from utils import inference_utils
+
+
+def start_server(socket_server,device):
+    """
+    开始监听客户端传来的消息
+    :param socket_server: socket服务端
+    :param device: 使用本地的cpu运行还是cuda运行
+    :return: None
+    """
+    while True:
+        # 等待客户端连接
+        conn, client = wait_client(socket_server)
+
+        # 接收模型类型
+        model_type = get_short_data(conn)
+        print(f"f get model type successfully.")
+
+        # 读取模型
+        model = inference_utils.get_dnn_model(model_type)
+
+        # 接收模型分层点
+        partition_point = get_short_data(conn)
+        print(f"f get partition point successfully.")
+
+        _,cloud_model = inference_utils.model_partition(model, partition_point)
+        cloud_model = cloud_model.to(device)
+
+
+        # 接收中间数据并返回传输时延
+        edge_output,transfer_latency = get_data(conn)
+        print(f"f get edge_output and transfer latency successfully.")
+        send_short_data(conn,transfer_latency,"transfer latency")
+
+
+        inference_utils.warmUp(cloud_model, edge_output, device)
+        # 记录云端推理时延
+        cloud_output,cloud_latency = inference_utils.recordTime(cloud_model, edge_output,device,epoch_cpu=30,epoch_gpu=100)
+        send_short_data(conn, cloud_latency, "cloud latency")
+
+        print("================= DNN Collaborative Inference Finished. ===================")
+
+
+
+def start_client(ip,port,input_x,model_type,partition_point,device):
+    """
+    启动一个client客户端 向server端发起推理请求
+    :param ip: server端的ip地址
+    :param port: server端的端口地址
+    :param model_type: 选用的模型类型
+    :param input_x: 初始输入
+    :param partition_point 模型划分点
+    :param device: 在本地cpu运行还是cuda运行
+    :return: None
+    """
+    conn = get_socket_client(ip, port)
+
+    # 发送模型类型
+    send_short_data(conn, model_type, msg="model type")
+
+    # 读取模型
+    model = inference_utils.get_dnn_model(model_type)
+
+    # 发送划分点
+    send_short_data(conn,partition_point,msg="partition strategy")
+
+    edge_model, _ = inference_utils.model_partition(model, partition_point)
+    edge_model = edge_model.to(device)
+
+    # 开始边缘端的推理 首先进行预热
+    inference_utils.warmUp(edge_model, input_x, device)
+    edge_output,edge_latency = inference_utils.recordTime(edge_model,input_x,device,epoch_cpu=30,epoch_gpu=100)
+    print(f"{model_type} 在边缘端设备上推理完成 - {edge_latency} ms")
+
+    # 发送中间数据
+    send_data(conn,edge_output,"edge output")
+    transfer_latency = get_short_data(conn)
+    print(f"{model_type} 传输完成 - {transfer_latency} ms")
+
+
+
+    cloud_latency = get_short_data(conn)
+    print(f"{model_type} 在云端设备上推理完成 - {cloud_latency} ms")
+
+    print("================= DNN Collaborative Inference Finished. ===================")
+    conn.close()
+
+
 
 def get_socket_server(ip, port, max_client_num=10):
     """
@@ -12,18 +100,18 @@ def get_socket_server(ip, port, max_client_num=10):
     :param max_client_num: 最大可连接的用户数
     :return: 创建好的socket
     """
-    p = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # 创建socket
+    socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # 创建socket
 
     # 判断使用的是什么平台
     sys_platform = platform.platform().lower()
     if "windows" in sys_platform:
-        p.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # windows
+        socket_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # windows
     else:
-        p.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1) # macos or linux
+        socket_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1) # macos or linux
 
-    p.bind((ip, port))  # 绑定端口号
-    p.listen(max_client_num)  # 打开监听
-    return p
+    socket_server.bind((ip, port))  # 绑定端口号
+    socket_server.listen(max_client_num)  # 打开监听
+    return socket_server
 
 
 def get_socket_client(ip, port):
@@ -186,7 +274,7 @@ def get_speed(network_type,bandwidth):
 
     if network_type == "3g":
         return bandwidth * transfer_from_Kb_to_B / 1000
-    elif network_type == "lte" or  network_type == "wifi":
+    elif network_type == "lte" or network_type == "wifi":
         return bandwidth * transfer_from_Mb_to_B / 1000
     else:
         raise RuntimeError(f"目前不支持network type - {network_type}")

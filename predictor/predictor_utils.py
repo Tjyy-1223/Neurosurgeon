@@ -8,7 +8,7 @@ from collections.abc import Iterable
 import joblib
 import os
 from models.MobileNet import ConvNormActivation,InvertedResidual
-from get_datasets_func import get_datasets_by_kernel_kind
+from predictor.get_datasets_func import get_datasets_by_kernel_kind
 
 """
     1. 主要为构建预测模型 prediction models需要用到的函数
@@ -150,6 +150,8 @@ def kernel_predictor_creator(kernel_kind, device, predictor_dict):
     :param predictor_dict: 记录预测器是否已经被加载的全局字典
     :return: 指定的预测器 predictor
     """
+    current_path = os.path.dirname(__file__) + "/"
+
     # 存储数据集的位置
     datasets_list = ["conv_lat.csv","dw_conv_lat.csv","linear_lat.csv","maxpool_lat.csv","avgpool_lat.csv","batchnorm_lat.csv"]
     datasets_path = "./dataset/edge/" if device == "edge" else "./dataset/cloud/"
@@ -161,21 +163,22 @@ def kernel_predictor_creator(kernel_kind, device, predictor_dict):
     # predictor根据传入的kernel-kind和device查找有没有对应的模型 如果模型已经被加载 则跳过
     # 如果模型没有被加载 但是有模型参数 则加载模型
     # 否则当场训练模型
-    config = predictor_config_path + predictor_config_list[kernel_kind]
+    config = current_path + predictor_config_path + predictor_config_list[kernel_kind]
+
     if config in predictor_dict.keys():
         predictor = predictor_dict.get(config)
     elif os.path.exists(config):
         predictor = joblib.load(config)
         predictor_dict[config] = predictor
-        print("load " + config + " successfully.")
+        # print("load " + config + " successfully.")
     else:
-        datasets = datasets_path + datasets_list[kernel_kind]
+        datasets = current_path + datasets_path + datasets_list[kernel_kind]
         predictor = model_training_linear(filepath=datasets,
                                           threshold=0.2,
                                           get_datasets_func=get_datasets_by_kernel_kind(kernel_kind),
                                           model_path=config,
                                           save=True)
-    print("get predictor " + config + " successfully.")
+    # print("get predictor " + config + " successfully.")
     return predictor
 
 
@@ -356,7 +359,7 @@ def predict_model_latency(x, model,device, predictor_dict):
     :return: latency
     """
     model_lat = 0.0
-    print(model)
+    # print(model)
     if isinstance(model,Iterable):
         for layer in model:
             layer_lat = predict_model_latency(x, layer,device, predictor_dict)
