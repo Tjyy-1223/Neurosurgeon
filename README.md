@@ -78,11 +78,11 @@ xlrd==2.0.1
 
 **云端设备：**
 
-![image-20230527101444697](/Users/tianjiangyu/MyStudy/Neurosurgeon/assets/image-20230527101444697.png)
+![image-20230527101444697](./assets/image-20230527101444697.png)
 
-**边端设备：**获取网络带宽的速度太慢 - **需要想办法加速** 
+**边端设备：** 获取网络带宽的速度太慢 - **需要想办法加速** 
 
-![image-20230527101527312](/Users/tianjiangyu/MyStudy/Neurosurgeon/assets/image-20230527101527312.png)
+![image-20230527101527312](./assets/image-20230527101527312.png)
 
 
 
