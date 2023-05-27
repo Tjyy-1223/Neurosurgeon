@@ -86,7 +86,7 @@ def neuron_surgeon_deployment(model,network_type,define_speed,show=False):
 
     # show best partition point
     res_layer = get_layer(model,res_index)
-    print(f"best latency : {res_lat:.2f} ms , best partition point : {res_layer_index + 1} - {res_layer}")
+    print(f"best latency : {res_lat:.2f} ms , best partition point : {res_layer_index} - {res_layer}")
     print("----------------------------------------------------------------------------------------------------------")
 
     #   return the best partition point

@@ -82,7 +82,7 @@ def start_client(ip,port,input_x,model_type,partition_point,device):
     # 开始边缘端的推理 首先进行预热
     inference_utils.warmUp(edge_model, input_x, device)
     edge_output,edge_latency = inference_utils.recordTime(edge_model,input_x,device,epoch_cpu=30,epoch_gpu=100)
-    print(f"{model_type} 在边缘端设备上推理完成 - {edge_latency} ms")
+    print(f"{model_type} 在边缘端设备上推理完成 - {edge_latency:.3f} ms")
 
     # 发送中间数据
     send_data(conn,edge_output,"edge output")
@@ -97,7 +97,7 @@ def start_client(ip,port,input_x,model_type,partition_point,device):
     conn.sendall("avoid  sticky".encode())
 
     cloud_latency = get_short_data(conn)
-    print(f"{model_type} 在云端设备上推理完成 - {cloud_latency} ms")
+    print(f"{model_type} 在云端设备上推理完成 - {cloud_latency:.3f} ms")
 
     print("================= DNN Collaborative Inference Finished. ===================")
     conn.close()

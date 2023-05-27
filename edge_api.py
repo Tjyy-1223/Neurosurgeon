@@ -48,10 +48,10 @@ if __name__ == '__main__':
     model = get_dnn_model(model_type)
 
     # 部署阶段 - 选择优化分层点
-    # upload_bandwidth = net_utils.get_bandwidth()
+    upload_bandwidth = net_utils.get_bandwidth()
 
     # 此处可以将upload_bandwidth 改成自己一个固定值
-    upload_bandwidth = 10  # MBps
+    # upload_bandwidth = 10  # MBps
 
     partition_point = neuron_surgeon_deployment(model,network_type="wifi",define_speed=upload_bandwidth,show=False)
 
