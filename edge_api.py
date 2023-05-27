@@ -3,9 +3,11 @@ import sys,getopt
 from net import net_utils
 from utils.inference_utils import get_dnn_model
 from deployment import neuron_surgeon_deployment
-
 import warnings
 warnings.filterwarnings("ignore")
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
 
 """
     边缘设备api，用于启动边缘设备，进行前半部分计算后，将中间数据传递给云端设备
