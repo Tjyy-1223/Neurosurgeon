@@ -11,9 +11,11 @@
 
 2）DNN模型层级特征研究：Layer latency 和 Size of output data。
 
-2）Deployment Phase：在本地机器运行DNN层得到构建预测模型，提供本地数据集和模型参数。
+2）Deployment Phase：在本地机器运行DNN层得到构建预测模型，提供模型参数。
 
 3）Runtime Phase：实现DNN模型协同推理，具体脚本命令参考下面的描述。
+
+**项目中提供了模型参数，可以直接clone到本地运行。**
 
 ## 项目结构
 
@@ -35,7 +37,7 @@ Neurosurgeon
 │   ├── config # 模型参数
 │   │   ├── cloud
 │   │   └── edge
-│   ├── dataset # 数据集（没有提供 需要的话可以发邮件）
+│   ├── dataset # 数据集（提供了模型参数 如果需要数据集用来自己研究预测器可以发邮件）
 │   │   ├── cloud
 │   │   └── edge
 │   ├── get_datasets_func.py # 读取数据集的过程
