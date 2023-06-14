@@ -37,7 +37,7 @@ Neurosurgeon
 │   ├── config # 模型参数
 │   │   ├── cloud
 │   │   └── edge
-│   ├── dataset # 数据集（提供了模型参数 如果需要数据集用来自己研究预测器可以发邮件）
+│   ├── dataset # 六种不同DNN层 采集数据集
 │   │   ├── cloud
 │   │   └── edge
 │   ├── get_datasets_func.py # 读取数据集的过程
