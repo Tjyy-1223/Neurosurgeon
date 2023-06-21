@@ -78,13 +78,29 @@ xlrd==2.0.1
 
 **单机运行结果如下：**
 
-**云端设备：**
+**云端设备：**python cloud_api.py -i 127.0.0.1 -p 9999 -d cpu
 
-![image-20230527101444697](./assets/image-20230527101444697.png)
+```
+successfully connection :<socket.socket fd=4, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 9999), raddr=('127.0.0.1', 61069)>
+get model type successfully.
+get partition point successfully.
+get edge_output and transfer latency successfully.
+short message , transfer latency has been sent successfully
+short message , cloud latency has been sent successfully
+```
 
-**边端设备：** 获取网络带宽的速度太慢 - **需要想办法加速** 
+**边端设备：** python edge_api.py -i 127.0.0.1 -p 9999 -d cpu -t alex_net
 
-![image-20230527101527312](./assets/image-20230527101527312.png)
+```
+best latency : 50.18 ms , best partition point : 2 - MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+----------------------------------------------------------------------------------------------------------
+short message , model type has been sent successfully
+short message , partition strategy has been sent successfully
+alex_net 在边缘端设备上推理完成 - 2.979 ms
+get yes , edge output has been sent successfully
+alex_net 传输完成 - 0.045 ms
+alex_net 在云端设备上推理完成 - 43.938 ms
+```
 
 
 
@@ -95,14 +111,14 @@ Neurosurgeon是云边协同推理中的优秀框架，首次实现了将DNN模�
 但其也有相应的局限性：
 
 + 只适用于链式拓扑结构
-+ 没有考虑深层结构中的划分点
-+ 只考虑了静态网络环境下的划分状况
++ 没有考虑模型的多层次结构以及各种DAG拓扑结构 - 可以参考DADS如何解决
++ 只考虑了静态网络环境下的划分状况 - 参考CAS论文如何解决
 
 可以考虑改进的点：
 
-+ （目前项目中）线性回归不太准确 - 如何提升预测器性能，可以精确预测DNN层的推理时延
-+ 目前获取带宽使用了speedtest-cli包，有时获取时延较慢，有时会有bug - 后续可以进行侵入式修改，修改为自己所需要的bandwidth monitor
-+ 注意通信过程中的粘包问题 
++  线性回归不太准确 - 如何提升预测器性能，可以精确预测DNN层的推理时延 ✅ 因为数据采集较少
++ 目前获取带宽使用了speedtest-cli包，有时获取时延较慢，有时会有bug - 后续可以进行侵入式修改，修改为自己所需要的bandwidth monitor ✅ 已经使用多线程+实时测量的方式，不使用speedtest-cli
++ 注意通信过程中的粘包问题 ✅ 基本不会出现bug
 
 ## 交流
 
