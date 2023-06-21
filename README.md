@@ -78,7 +78,7 @@ xlrd==2.0.1
 
 **单机运行结果如下：**
 
-**云端设备：**python cloud_api.py -i 127.0.0.1 -p 9999 -d cpu
+**云端设备：** python cloud_api.py -i 127.0.0.1 -p 9999 -d cpu
 
 ```
 successfully connection :<socket.socket fd=4, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 9999), raddr=('127.0.0.1', 61069)>
