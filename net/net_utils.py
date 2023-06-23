@@ -10,6 +10,7 @@ from utils import inference_utils
 def start_server(socket_server,device):
     """
     开始监听客户端传来的消息
+    一般仅在 cloud_api.py 中直接调用
     :param socket_server: socket服务端
     :param device: 使用本地的cpu运行还是cuda运行
     :return: None
@@ -57,6 +58,7 @@ def start_server(socket_server,device):
 def start_client(ip,port,input_x,model_type,partition_point,device):
     """
     启动一个client客户端 向server端发起推理请求
+    一般仅在 edge_api.py 中直接调用
     :param ip: server端的ip地址
     :param port: server端的端口地址
     :param model_type: 选用的模型类型
@@ -168,49 +170,6 @@ def wait_client(p):
     return conn,client
 
 
-
-def create_server(p):
-    """
-    使用socket 建立一个 server - 循环等待客户端发来请求
-    :param p: socket连接
-    :return: None
-    """
-    while True:
-        conn, client = p.accept()  # 接收到客户端的请求
-        print(f"connect with client :{conn} successfully ")
-
-        sum_time = 0.0
-        # 收发消息
-        data = [conn.recv(1)]  # 为了更准确地记录时间，先获取长度为1的消息，之后开启计时
-        while True:
-            start_time = time.perf_counter()  # 记录开始时间
-            packet = conn.recv(1024)
-            end_time = time.perf_counter()  # 记录结束时间
-            transport_time = (end_time - start_time) * 1000
-            sum_time += transport_time  # 传输时间累计到sum_time变量中
-
-            data.append(packet)
-            if len(packet) < 1024:  # 长度 < 1024 代表所有数据已经被接受
-                break
-
-        parse_data = pickle.loads(b"".join(data))  # 发送和接收数据都使用pickle包，所以这里进行解析pickle
-        print(f"get all data come from :{conn} successfully ")
-
-        if torch.is_tensor(parse_data):  # 主要对tensor数据进行数据大小的衡量
-            total_num = 1
-            for num in parse_data.shape:
-                total_num += num
-            data_size = total_num * 4
-        else:
-            data_size = 0.0
-
-        print(f"data size(bytes) : {data_size} \t transfer time : {sum_time:.3} ms")
-        print("=====================================")
-        conn.send("yes".encode("UTF-8"))  # 接收到所有请求后回复client
-        conn.close()
-
-
-
 def send_data(conn, x, msg="msg"):
     """
     向另一方发送较长数据 例如DNN模型中间层产生的tensor
@@ -291,8 +250,6 @@ def get_bandwidth():
     return upload
 
 
-
-
 def get_speed(network_type,bandwidth):
     """
     根据speed_type获取网络带宽
@@ -311,12 +268,54 @@ def get_speed(network_type,bandwidth):
         raise RuntimeError(f"目前不支持network type - {network_type}")
 
 
+def create_server(p):
+    """
+    使用socket 建立一个 server - 循环等待客户端发来请求
+    一般仅在测试的时候进行使用
+    :param p: socket连接
+    :return: None
+    """
+    while True:
+        conn, client = p.accept()  # 接收到客户端的请求
+        print(f"connect with client :{conn} successfully ")
+
+        sum_time = 0.0
+        # 收发消息
+        data = [conn.recv(1)]  # 为了更准确地记录时间，先获取长度为1的消息，之后开启计时
+        while True:
+            start_time = time.perf_counter()  # 记录开始时间
+            packet = conn.recv(1024)
+            end_time = time.perf_counter()  # 记录结束时间
+            transport_time = (end_time - start_time) * 1000
+            sum_time += transport_time  # 传输时间累计到sum_time变量中
+
+            data.append(packet)
+            if len(packet) < 1024:  # 长度 < 1024 代表所有数据已经被接受
+                break
+
+        parse_data = pickle.loads(b"".join(data))  # 发送和接收数据都使用pickle包，所以这里进行解析pickle
+        print(f"get all data come from :{conn} successfully ")
+
+        if torch.is_tensor(parse_data):  # 主要对tensor数据进行数据大小的衡量
+            total_num = 1
+            for num in parse_data.shape:
+                total_num += num
+            data_size = total_num * 4
+        else:
+            data_size = 0.0
+
+        print(f"data size(bytes) : {data_size} \t transfer time : {sum_time:.3} ms")
+        print("=====================================")
+        conn.send("yes".encode("UTF-8"))  # 接收到所有请求后回复client
+        conn.close()
+
 
 def show_speed(data_size,actual_latency,speed_Bpms):
     """
     用于比较：
     （1）iperf真实带宽 和 预测带宽
     （2）真实传输时延 和 根据公式计算得出的的预测传输时延
+    一般只有测试的时候会使用
     :param data_size: 数据大小 - bytes
     :param actual_latency: 实际传输时延
     :param speed_Bpms: iperf获取的真实带宽
