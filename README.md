@@ -57,6 +57,7 @@ speedtest-cli==2.1.3
 torch==1.9.0.post2
 torchvision==0.10.0a0
 xlrd==2.0.1
+apscheduler
 ```
 
 ## 项目运行

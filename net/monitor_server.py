@@ -2,6 +2,7 @@ from multiprocessing import Process
 import net_utils
 import torch
 import pickle
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 
 def get_bandwidth(conn):
@@ -30,17 +31,19 @@ def get_bandwidth(conn):
 class MonitorServer(Process):
     """
         带宽监视器服务端，其工作流程如下：ip为传入的ip 端口默认为9922
-        1. 通过死循环接受带宽监视器客户端传来的数据
+        1. 带宽监视器客户端传来的数据 ： 通过定时机制开启 每隔一段时间开启一次
         2. 记录传输时间需要的传输时延 (ms)
         3. 计算带宽 并将速度转换成单位 MB/s
-        4. 将带宽数据返回给客户端 用于在边缘设备上的模型划分
+        4. 将带宽数据返回给客户端
     """
-    def __init__(self,ip,port=9922):
+    def __init__(self, ip, port=9922, interval=3):
         super(MonitorServer, self).__init__()
         self.ip = ip
         self.port = port
+        self.interval = interval
 
-    def run(self) -> None:
+
+    def start_server(self) -> None:
         # 创建一个socket服务端
         socket_server = net_utils.get_socket_server(self.ip, self.port)
         # 等待客户端连接 没有客户端连接的话会一直阻塞并等待
@@ -53,9 +56,31 @@ class MonitorServer(Process):
         net_utils.get_short_data(conn)
 
         # 将获取的带宽传输到客户端
-        net_utils.send_short_data(conn,bandwidth,"bandwidth",show=False)
+        net_utils.send_short_data(conn, bandwidth, "bandwidth", show=False)
 
         # 关闭连接
         net_utils.close_conn(conn)
         net_utils.close_socket(socket_server)
+
+
+    def run(self) -> None:
+        # 使用定时机制 每隔一段时间后监测带宽
+        # 创建调度器
+        scheduler = BlockingScheduler()
+
+        # 添加任务
+        scheduler.add_job(self.start_server, 'interval', seconds=self.interval)
+        scheduler.start()
+
+
+
+if __name__ == '__main__':
+    ip = "127.0.0.1"
+    interval = 3
+    monitor_ser = MonitorServer(ip=ip, interval=interval)
+
+    monitor_ser.start()
+    monitor_ser.join()
+
+
 

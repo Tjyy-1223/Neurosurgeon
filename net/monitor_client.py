@@ -2,20 +2,23 @@ import torch
 import pickle
 from multiprocessing import Process
 import net_utils
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 
 class MonitorClient(Process):
     """
-        带宽监视器客户端，其工作流程如下：
+        带宽监视器客户端，其工作流程如下：通过定时机制每隔一段时间测量一次
         1. 生成数据并发送给服务端 由服务端记录时间
         2. 获取数据的传输时延 使用进程通信 - 供边缘端进行模型划分
     """
-    def __init__(self,ip,port=9922):
+    def __init__(self, ip, port=9922, interval=3):
         super(MonitorClient, self).__init__()
         self.ip = ip
         self.port = port
+        self.interval = interval
 
-    def run(self) -> None:
+
+    def start_client(self) -> None:
         # 传入的数据大小
         data = torch.rand((1, 3, 224, 224))
 
@@ -27,7 +30,7 @@ class MonitorClient(Process):
                 net_utils.send_data(conn, data, "data", show=False)
 
                 # 插入一个break消息 防止粘包现象
-                net_utils.send_short_data(conn,"break",show=False)
+                net_utils.send_short_data(conn, "break", show=False)
 
                 # 直到接收到回应的数据时延 则退出循环
                 latency = net_utils.get_short_data(conn)
@@ -40,3 +43,21 @@ class MonitorClient(Process):
                 # print("[Errno 61] Connection refused, try again.")
 
 
+    def run(self) -> None:
+        # 使用定时机制 每隔一段时间后监测带宽
+        # 创建调度器
+        scheduler = BlockingScheduler()
+
+        # 添加任务
+        scheduler.add_job(self.start_client, 'interval', seconds=self.interval)
+        scheduler.start()
+
+
+
+if __name__ == '__main__':
+    ip = "127.0.0.1"
+    interval = 3
+    monitor_cli = MonitorClient(ip=ip, interval=interval)
+
+    monitor_cli.start()
+    monitor_cli.join()
