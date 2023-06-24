@@ -170,7 +170,7 @@ def wait_client(p):
     return conn,client
 
 
-def send_data(conn, x, msg="msg"):
+def send_data(conn, x, msg="msg", show=True):
     """
     向另一方发送较长数据 例如DNN模型中间层产生的tensor
     注意：接收数据需要使用get_data函数
@@ -178,6 +178,7 @@ def send_data(conn, x, msg="msg"):
     :param conn: 客户端的conn连接
     :param x: 要发送的数据
     :param msg: 对应的 提示
+    :param show: 是否展示数据通信消息
     :return:
     """
     send_x = pickle.dumps(x)
@@ -186,15 +187,17 @@ def send_data(conn, x, msg="msg"):
 
     conn.sendall(send_x)
     resp_data = conn.recv(1024).decode()
-    print(f"get {resp_data} , {msg} has been sent successfully")  # 表示对面已收到数据
+    if show:
+        print(f"get {resp_data} , {msg} has been sent successfully")  # 表示对面已收到数据
 
 
 
-def send_short_data(conn,x,msg="msg"):
+def send_short_data(conn, x, msg="msg", show=True):
     """ 向另一方发送比较短的数据 接收数据直接使用get_short_data"""
     send_x = pickle.dumps(x)
     conn.sendall(send_x)
-    print(f"short message , {msg} has been sent successfully")  # 表示对面已收到数据
+    if show:
+        print(f"short message , {msg} has been sent successfully")  # 表示对面已收到数据
 
 
 
@@ -215,7 +218,7 @@ def get_data(conn):
         start_time = time.perf_counter()
         packet = conn.recv(40960)
         end_time = time.perf_counter()
-        transport_time = (end_time - start_time) * 1000
+        transport_time = (end_time - start_time) * 1000  # 单位转换成ms
         sum_time += transport_time
 
         data.append(packet)
