@@ -3,6 +3,7 @@ import sys,getopt
 from net import net_utils
 import warnings
 warnings.filterwarnings("ignore")
+from net.monitor_server import MonitorServer
 
 """
     云端设备api 用于接收中间数据，并在云端执行剩余的DNN部分，将结果保存在excel表格中
@@ -34,7 +35,16 @@ if __name__ == '__main__':
     if device == "cuda" and torch.cuda.is_available() == False:
         raise RuntimeError("本机器上不可以使用cuda")
 
-    # 开启服务端进行监听
-    socket_server = net_utils.get_socket_server(ip,port)
-    net_utils.start_server(socket_server,device)
+    while True:
+        # 开启：带宽监测服务端
+        monitor_ser = MonitorServer(ip=ip)
+        monitor_ser.start()
+        monitor_ser.join()
+
+
+        # 开启服务端进行监听
+        socket_server = net_utils.get_socket_server(ip,port)
+        net_utils.start_server(socket_server,device)
+
+        monitor_ser.terminate()
 

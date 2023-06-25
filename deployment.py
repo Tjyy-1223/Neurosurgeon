@@ -57,6 +57,7 @@ def neuron_surgeon_deployment(model,network_type,define_speed,show=False):
         transport_size = len(pickle.dumps(x))
         speed = net_utils.get_speed(network_type=network_type,bandwidth=define_speed)
         transmission_lat = transport_size / speed
+
         # if index == len(model):
         #     transmission_lat = 0.0
 

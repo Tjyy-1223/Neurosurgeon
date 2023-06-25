@@ -7,6 +7,9 @@ import warnings
 warnings.filterwarnings("ignore")
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
+from net.monitor_client import MonitorClient
+from multiprocessing import Process
+import multiprocessing
 
 
 """
@@ -42,6 +45,18 @@ if __name__ == '__main__':
         raise RuntimeError("本机器上不可以使用cuda")
 
 
+    # 开启：带宽监测客户端
+    # 如果没有两个设备测试的条件 可以使用下面的方式 将带宽自定义
+    # bandwidth_value = 10  #Mbps
+    bandwidth_value = multiprocessing.Value('d', 0.0)
+    monitor_cli = MonitorClient(ip=ip, bandwidth_value=bandwidth_value)
+    monitor_cli.start()
+
+    # 等待子进程结束后获取到带宽数据
+    monitor_cli.join()
+    print(f"get bandwidth value : {bandwidth_value.value} MB/s")
+
+
     # step2 准备input数据
     x = torch.rand(size=(1, 3, 224, 224), requires_grad=False)
     x = x.to(device)
@@ -50,11 +65,7 @@ if __name__ == '__main__':
     model = get_dnn_model(model_type)
 
     # 部署阶段 - 选择优化分层点
-    # upload_bandwidth = net_utils.get_bandwidth()
-
-    # 此处可以将upload_bandwidth 改成自己一个固定值
-    upload_bandwidth = 10  # MBps
-
+    upload_bandwidth = bandwidth_value.value  # MBps
     partition_point = neuron_surgeon_deployment(model,network_type="wifi",define_speed=upload_bandwidth,show=False)
 
     # 使用云边协同的方式进行模拟

@@ -31,8 +31,9 @@ Neurosurgeon
 │   └── VggNet.py
 ├── net # 网络模块
 │   ├── net_utils.py # 网络功能方法
-│   ├── transport_client.py # 测试-客户端（用不到）
-│   └── transport_server.py # 测试-服务端（用不到）
+│   ├── monitor_client.py # 带宽监视器客户端
+│   └── monitor_server.py # 带宽监视器服务端
+│   └── monitor_test.py # 带宽监视器测试服务
 ├── predictor # 预测器模块
 │   ├── config # 模型参数
 │   │   ├── cloud
@@ -62,7 +63,12 @@ apscheduler
 
 ## 项目运行
 
-**以下示范为本地单机运行：**
+### 单机单任务模式
+
++ **一般用于评估对于DNN推理时延的性能改进：指每次需要通过指令向客户端提供任务**
++ **带宽数据为每次进行推理之前 进行单次监测**
+
+
 
 云端设备上运行 ： 可以改成服务端开放的ip和端口；-d表示云端使用cpu还是gpu：输入参数"cpu"或"cuda"
 
@@ -82,26 +88,34 @@ apscheduler
 **云端设备：** python cloud_api.py -i 127.0.0.1 -p 9999 -d cpu
 
 ```
-successfully connection :<socket.socket fd=4, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 9999), raddr=('127.0.0.1', 61069)>
+successfully connection :<socket.socket fd=6, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 9999), raddr=('127.0.0.1', 64595)>
 get model type successfully.
 get partition point successfully.
 get edge_output and transfer latency successfully.
 short message , transfer latency has been sent successfully
 short message , cloud latency has been sent successfully
+================= DNN Collaborative Inference Finished. ===================
 ```
 
 **边端设备：** python edge_api.py -i 127.0.0.1 -p 9999 -d cpu -t alex_net
 
 ```
-best latency : 50.18 ms , best partition point : 2 - MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+(tjyy) tianjiangyu@tianjiangyudeMacBook-Pro Neurosurgeon % python edge_api.py -i 127.0.0.1 -p 9999 -d cpu -t alex_net
+get bandwidth value : 3259.5787388244685 MB/s
+best latency : 10.07 ms , best partition point : 0 - None
 ----------------------------------------------------------------------------------------------------------
 short message , model type has been sent successfully
 short message , partition strategy has been sent successfully
-alex_net 在边缘端设备上推理完成 - 2.979 ms
+alex_net 在边缘端设备上推理完成 - 0.072 ms
 get yes , edge output has been sent successfully
-alex_net 传输完成 - 0.045 ms
-alex_net 在云端设备上推理完成 - 43.938 ms
+alex_net 传输完成 - 0.129 ms
+alex_net 在云端设备上推理完成 - 34.621 ms
+================= DNN Collaborative Inference Finished. ===================
 ```
+
+
+
+
 
 
 
@@ -118,7 +132,7 @@ Neurosurgeon是云边协同推理中的优秀框架，首次实现了将DNN模�
 可以考虑改进的点：
 
 +  线性回归不太准确 - 如何提升预测器性能，可以精确预测DNN层的推理时延 ✅ 因为数据采集较少
-+ 目前获取带宽使用了speedtest-cli包，有时获取时延较慢，有时会有bug - 后续可以进行侵入式修改，修改为自己所需要的bandwidth monitor ✅ 已经使用多线程+实时测量的方式，不使用speedtest-cli
++ 已经使用多进程模式，在主任务推理之前 新开启一个进程，用来发送数据获取网络带宽 ✅ 
 + 注意通信过程中的粘包问题 ✅ 基本不会出现bug
 
 ## 交流

@@ -15,43 +15,42 @@ def start_server(socket_server,device):
     :param device: 使用本地的cpu运行还是cuda运行
     :return: None
     """
-    while True:
-        # 等待客户端连接
-        conn, client = wait_client(socket_server)
+    # 等待客户端连接
+    conn, client = wait_client(socket_server)
 
-        # 接收模型类型
-        model_type = get_short_data(conn)
-        print(f"get model type successfully.")
+    # 接收模型类型
+    model_type = get_short_data(conn)
+    print(f"get model type successfully.")
 
-        # 读取模型
-        model = inference_utils.get_dnn_model(model_type)
+    # 读取模型
+    model = inference_utils.get_dnn_model(model_type)
 
-        # 接收模型分层点
-        partition_point = get_short_data(conn)
-        print(f"get partition point successfully.")
+    # 接收模型分层点
+    partition_point = get_short_data(conn)
+    print(f"get partition point successfully.")
 
-        _,cloud_model = inference_utils.model_partition(model, partition_point)
-        cloud_model = cloud_model.to(device)
+    _,cloud_model = inference_utils.model_partition(model, partition_point)
+    cloud_model = cloud_model.to(device)
 
 
-        # 接收中间数据并返回传输时延
-        edge_output,transfer_latency = get_data(conn)
+    # 接收中间数据并返回传输时延
+    edge_output,transfer_latency = get_data(conn)
 
-        # 连续发送两个消息 防止消息粘包
-        conn.recv(40)
+    # 连续发送两个消息 防止消息粘包
+    conn.recv(40)
 
-        print(f"get edge_output and transfer latency successfully.")
-        send_short_data(conn,transfer_latency,"transfer latency")
+    print(f"get edge_output and transfer latency successfully.")
+    send_short_data(conn,transfer_latency,"transfer latency")
 
-        # 连续发送两个消息 防止消息粘包
-        conn.recv(40)
+    # 连续发送两个消息 防止消息粘包
+    conn.recv(40)
 
-        inference_utils.warmUp(cloud_model, edge_output, device)
-        # 记录云端推理时延
-        cloud_output,cloud_latency = inference_utils.recordTime(cloud_model, edge_output,device,epoch_cpu=30,epoch_gpu=100)
-        send_short_data(conn, cloud_latency, "cloud latency")
+    inference_utils.warmUp(cloud_model, edge_output, device)
+    # 记录云端推理时延
+    cloud_output,cloud_latency = inference_utils.recordTime(cloud_model, edge_output,device,epoch_cpu=30,epoch_gpu=100)
+    send_short_data(conn, cloud_latency, "cloud latency")
 
-        print("================= DNN Collaborative Inference Finished. ===================")
+    print("================= DNN Collaborative Inference Finished. ===================")
 
 
 

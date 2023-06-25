@@ -1,9 +1,8 @@
 from multiprocessing import Process
-import net_utils
 import torch
 import pickle
 from apscheduler.schedulers.blocking import BlockingScheduler
-
+from net import net_utils
 
 def get_bandwidth(conn):
     """
@@ -63,7 +62,7 @@ class MonitorServer(Process):
         net_utils.close_socket(socket_server)
 
 
-    def run(self) -> None:
+    def schedular(self):
         # 使用定时机制 每隔一段时间后监测带宽
         # 创建调度器
         scheduler = BlockingScheduler()
@@ -73,14 +72,19 @@ class MonitorServer(Process):
         scheduler.start()
 
 
+    def run(self) -> None:
+        # self.schedular()
+        self.start_server()
+
+
 
 if __name__ == '__main__':
     ip = "127.0.0.1"
-    interval = 3
-    monitor_ser = MonitorServer(ip=ip, interval=interval)
+    monitor_ser = MonitorServer(ip=ip)
 
     monitor_ser.start()
     monitor_ser.join()
+
 
 
 
