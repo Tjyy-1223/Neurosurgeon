@@ -118,16 +118,62 @@ alex_net 在云端设备上推理完成 - 34.621 ms
 + tasks_cloud_api.py开启后：开启后分别启动两个进程（两个端口)，分别用于等待边缘端传来的任务以及定时采集带宽数据
 + tasks_edge_api.py开启后：负责从queue中逐个获取不同的DNN推理任务，并利用云边协同运算进行推理。
 
+**设计细节：**
 
++ 使用BackgroundScheduler异步调度器，不会阻塞主进程的运行，在后台进行调度，每隔1s监测一次带宽
++ 边缘设备不断从队列中获取任务，结合当前的带宽状况进行边缘端推理
++ 云端设备完成后一半部分的推理任务
+
+
+
+边缘设备运行：python tasks_edge_api.py -i 127.0.0.1 -p 9999 -d cpu
 
 ```
-
+tasks list info : ['le_net', 'mobile_net', 'le_net', 'alex_net', 'vgg_net', 'vgg_net', 'vgg_net', 'le_net', 'mobile_net', 'mobile_net', 'alex_net', 'vgg_net', 'mobile_net', 'vgg_net', 'alex_net', 'alex_net', 'alex_net', 'le_net', 'alex_net', 'vgg_net', 'mobile_net', 'vgg_net', 'alex_net', 'le_net', 'vgg_net', 'vgg_net', 'le_net', 'alex_net', 'vgg_net', 'mobile_net', 'mobile_net', 'alex_net', 'alex_net', 'vgg_net', 'vgg_net', 'le_net', 'le_net', 'le_net', 'vgg_net', 'mobile_net']
+===================== start inference tasks ===================== 
+get bandwidth value : 7152.80666553514 MB/s
+get model type: le_net 
+best latency : 88.77 ms , best partition point : 0 - None
+----------------------------------------------------------------------------------------------------------
+short message , model type has been sent successfully
+short message , partition strategy has been sent successfully
+le_net 在边缘端设备上推理完成 - 0.001 ms
+get yes , edge output has been sent successfully
+le_net 传输完成 - 0.098 ms
+le_net 在云端设备上推理完成 - 17.468 ms
+================= DNN Collaborative Inference Finished. ===================
+get bandwidth value : 7152.80666553514 MB/s
+get model type: mobile_net 
+best latency : 115.15 ms , best partition point : 0 - None
+----------------------------------------------------------------------------------------------------------
+short message , model type has been sent successfully
+short message , partition strategy has been sent successfully
+mobile_net 在边缘端设备上推理完成 - 0.001 ms
+get yes , edge output has been sent successfully
+mobile_net 传输完成 - 0.254 ms
+mobile_net 在云端设备上推理完成 - 103.763 ms
+================= DNN Collaborative Inference Finished. ===================
+.....
 ```
 
-
+云端设备运行：python tasks_cloud_api.py -i 127.0.0.1 -p 9999 -d cpu
 
 ```
-
+successfully connection :<socket.socket fd=6, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 9999), raddr=('127.0.0.1', 50656)>
+get model type successfully.
+get partition point successfully.
+get edge_output and transfer latency successfully.
+short message , transfer latency has been sent successfully
+short message , cloud latency has been sent successfully
+================= DNN Collaborative Inference Finished. ===================
+successfully connection :<socket.socket fd=4, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 9999), raddr=('127.0.0.1', 50661)>
+get model type successfully.
+get partition point successfully.
+get edge_output and transfer latency successfully.
+short message , transfer latency has been sent successfully
+short message , cloud latency has been sent successfully
+================= DNN Collaborative Inference Finished. ===================
+...
 ```
 
 
