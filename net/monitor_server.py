@@ -45,6 +45,9 @@ class MonitorServer(Process):
     def start_server(self) -> None:
         # 创建一个socket服务端
         socket_server = net_utils.get_socket_server(self.ip, self.port)
+        # 超过10s没有连接后自动断开 不会一直阻塞等待
+        # socket_server.settimeout(10)
+
         # 等待客户端连接 没有客户端连接的话会一直阻塞并等待
         conn, client = socket_server.accept()
 

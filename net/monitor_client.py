@@ -1,3 +1,5 @@
+import time
+
 import torch
 import pickle
 from multiprocessing import Process
@@ -41,6 +43,7 @@ class MonitorClient(Process):
                     self.bandwidth_value.value = latency
                     net_utils.close_conn(conn)
                     break
+                time.sleep(1)
             except ConnectionRefusedError:
                 pass
                 # print("[Errno 61] Connection refused, try again.")
